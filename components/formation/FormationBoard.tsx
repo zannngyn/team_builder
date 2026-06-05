@@ -179,6 +179,7 @@ export function FormationBoard() {
   } = useFormationStore();
 
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
+  const [isPoolCollapsed, setIsPoolCollapsed] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -227,8 +228,15 @@ export function FormationBoard() {
     >
       <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
         {/* Left Sidebar: Unassigned Pool (Fixed/Sticky height) */}
-        <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 lg:sticky lg:top-[90px] h-auto lg:h-[calc(100vh-140px)] flex flex-col">
-          <UnassignedPool />
+        <div
+          className={`w-full flex-shrink-0 lg:sticky lg:top-[90px] h-auto lg:h-[calc(100vh-140px)] flex flex-col transition-all duration-300 ${
+            isPoolCollapsed ? "lg:w-16" : "lg:w-80 xl:w-96"
+          }`}
+        >
+          <UnassignedPool
+            isCollapsed={isPoolCollapsed}
+            onToggleCollapse={() => setIsPoolCollapsed(!isPoolCollapsed)}
+          />
         </div>
 
         {/* Right Section: Roster Toolbar & Board */}
