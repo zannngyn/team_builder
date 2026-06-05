@@ -46,3 +46,52 @@ body {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
+
+/* Export mode - Hide UI elements when capturing */
+.exporting header {
+  display: none !important;
+}
+
+.exporting button:not([data-keep-in-export]) {
+  display: none !important;
+}
+
+.exporting select {
+  pointer-events: none;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.exporting .absolute {
+  display: none !important;
+}
+
+.exporting [role="tooltip"],
+.exporting [role="dialog"] {
+  display: none !important;
+}
+
+/* Clean up member cards for export - Remove decorative effects but keep class colors */
+.exporting .group {
+  /* Remove backdrop blur for solid appearance */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  /* Remove inset gradient shadow only */
+  box-shadow: none !important;
+}
+
+/* Cards WITHOUT class colors (no inline background) - give them solid white/dark */
+.exporting .group:not([style*="background-color"]) {
+  background-color: rgb(255 255 255) !important;
+}
+
+.dark .exporting .group:not([style*="background-color"]) {
+  background-color: rgb(2 6 23) !important;
+}
+
+/* Cards WITH class colors - enhance saturation for vibrant export */
+.exporting .group[style*="background-color"] {
+  /* Use filter to make colors more vibrant and visible */
+  filter: saturate(1.6) brightness(1.1) contrast(1.05) !important;
+}

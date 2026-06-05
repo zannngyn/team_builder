@@ -167,7 +167,11 @@ function ClearBoardMenu() {
   );
 }
 
-export function FormationBoard() {
+interface FormationBoardProps {
+  captureRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export function FormationBoard({ captureRef }: FormationBoardProps = {}) {
   const {
     assignToTeam,
     removeFromTeam,
@@ -319,7 +323,7 @@ export function FormationBoard() {
           {laneView ? (
             <LaneView />
           ) : (
-            <div className="space-y-6">
+            <div ref={captureRef} className="space-y-6">
               {/* Division 1 */}
               <DivisionLayout
                 divisionId={1}
