@@ -4,14 +4,7 @@ import { useFormationStore } from "@/store/useFormationStore";
 import { MemberCard } from "@/components/shared/MemberCard";
 import { useDroppable } from "@dnd-kit/core";
 import { useState } from "react";
-import {
-  Search,
-  Filter,
-  RefreshCw,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Search, Filter, RefreshCw, Sparkles } from "lucide-react";
 import { CLASSES } from "@/lib/constants/classes";
 import { LANES } from "@/lib/constants/lanes";
 import { Class, Lane } from "@/types";
@@ -74,20 +67,11 @@ export function UnassignedPool({
           : "border-slate-200 dark:border-slate-800"
       } ${isCollapsed ? "p-2" : "p-4"}`}
     >
-      {/* Collapse/Expand Toggle Button */}
-      <button
-        onClick={onToggleCollapse}
-        className="absolute -right-3 top-4 z-10 p-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg transition-all border-2 border-white dark:border-slate-900"
-        title={isCollapsed ? "Mở rộng" : "Thu gọn"}
-      >
-        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
-
       {isCollapsed ? (
         /* Collapsed View - Vertical Bar */
         <div className="flex flex-col items-center gap-3 py-2">
           <div className="writing-mode-vertical text-xs font-black text-slate-700 dark:text-slate-300 tracking-wider uppercase whitespace-nowrap rotate-180">
-            Kho Thành Viên
+            Thành viên
           </div>
           <div className="px-2 py-1 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg">
             <span className="text-xs font-black text-blue-600 dark:text-blue-400">
@@ -103,7 +87,7 @@ export function UnassignedPool({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-widest uppercase">
-                  Kho Thành Viên
+                  Thành Viên
                 </h2>
                 <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 rounded-full">
                   {unassignedMembers.length}
@@ -191,7 +175,7 @@ export function UnassignedPool({
                     value="None"
                     className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-300"
                   >
-                    Không Lane
+                    Chưa phân Lane
                   </option>
                   {LANES.map((l) => (
                     <option

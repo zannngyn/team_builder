@@ -27,6 +27,7 @@ interface FormationState {
     removeMember: (id: string) => void;
     updateMemberClass: (id: string, cls: Class | null) => void;
     updateMemberLane: (id: string, lane: Lane | null) => void;
+    updateMemberSkills: (id: string, skills: string[]) => void;
     toggleMemberTag: (id: string, tag: MemberTag) => void;
     clearAllGuildMembers: () => void;
     removeAllFromTeams: () => void;
@@ -38,7 +39,7 @@ interface FormationState {
 
     // Formation actions
     initFormation: (name: string) => void;
-    assignToTeam: (memberId: string, teamId: number) => void;
+    assignToTeam: (memberId: string, teamId: number, position?: number) => void;
     removeFromTeam: (memberId: string) => void;
     selectTeam: (teamId: number | null) => void;
     clearAllTeams: () => void;
@@ -52,7 +53,7 @@ interface FormationState {
 
     // Getters
     getUnassignedMembers: () => Member[];
-    getTeamMembers: (teamId: number) => Member[];
+    getTeamMembers: (teamId: number) => (Member | null)[];
 }
 
 function createEmptyFormation(name: string): Formation {
@@ -138,6 +139,7 @@ export const useFormationStore = create<FormationState>((set, get) => ({
             lane: null,
             tags: [],
             notes: "",
+            skills: [],
         }));
         set({ guildMembers: members });
         if (typeof window !== "undefined") {
@@ -166,6 +168,7 @@ export const useFormationStore = create<FormationState>((set, get) => ({
             lane: null,
             tags: [],
             notes: "",
+            skills: [],
         }));
 
         set({ guildMembers: members });
@@ -182,6 +185,7 @@ export const useFormationStore = create<FormationState>((set, get) => ({
             lane: null,
             tags: [],
             notes: "",
+            skills: [],
         };
         set((state) => {
             const updated = [...state.guildMembers, member];
@@ -271,6 +275,18 @@ export const useFormationStore = create<FormationState>((set, get) => ({
         });
     },
 
+    updateMemberSkills: (id: string, skills: string[]) => {
+        set((state) => {
+            const updated = state.guildMembers.map((m) =>
+                m.id === id ? { ...m, skills: skills.slice(0, 3) } : m
+            );
+            if (typeof window !== "undefined") {
+                localStorage.setItem("sow_guild_members", JSON.stringify(updated));
+            }
+            return { guildMembers: updated };
+        });
+    },
+
     toggleMemberTag: (id: string, tag: MemberTag) => {
         set((state) => {
             const updated = state.guildMembers.map((m) => {
@@ -316,7 +332,7 @@ export const useFormationStore = create<FormationState>((set, get) => ({
         }
     },
 
-    assignToTeam: (memberId: string, teamId: number) => {
+    assignToTeam: (memberId: string, teamId: number, position?: number) => {
         set((state) => {
             if (!state.formation) return state;
 
@@ -329,13 +345,27 @@ export const useFormationStore = create<FormationState>((set, get) => ({
                 })),
             }));
 
-            // Add to target team
+            // Add to target team at specific position
             for (const div of newDivisions) {
                 for (const team of div.teams) {
                     if (team.teamId === teamId) {
-                        // Ensure max capacity of 6 is not exceeded by UI restrictions, but allow drop
                         if (!team.members.includes(memberId)) {
-                            team.members.push(memberId);
+                            // If position is provided and valid (0-5 for 6 slots)
+                            if (position !== undefined && position >= 0 && position < 6) {
+                                // Pad array with empty placeholders if needed to reach the position
+                                while (team.members.length < position) {
+                                    team.members.push("");
+                                }
+                                // Now insert at the desired position
+                                team.members.splice(position, 0, memberId);
+                                // Remove empty placeholders that exceed 6 slots
+                                if (team.members.length > 6) {
+                                    team.members = team.members.slice(0, 6);
+                                }
+                            } else {
+                                // Push to the end (backward compatibility)
+                                team.members.push(memberId);
+                            }
                         }
                     }
                 }
@@ -575,9 +605,12 @@ export const useFormationStore = create<FormationState>((set, get) => ({
         for (const div of formation.divisions) {
             for (const team of div.teams) {
                 if (team.teamId === teamId) {
-                    return guildMembers.filter((m) =>
-                        team.members.includes(m.id)
-                    );
+                    // Map member IDs to member objects, preserving positions
+                    // Empty string placeholders become null to preserve sparse positions
+                    return team.members.map((memberId) => {
+                        if (memberId === "") return null;
+                        return guildMembers.find((m) => m.id === memberId) || null;
+                    });
                 }
             }
         }

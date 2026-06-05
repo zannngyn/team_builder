@@ -8,6 +8,7 @@ export const CLASS_COLORS: Record<Class, string> = {
     "Tố Vấn": "#ec4899",
     "Thần Tương": "#f97316",
     "Long Ngâm": "#22c55e",
+    "All": "#ffffff",
 };
 
 export const CLASSES: Class[] = [
@@ -18,6 +19,7 @@ export const CLASSES: Class[] = [
     "Tố Vấn",
     "Thần Tương",
     "Long Ngâm",
+    "All",
 ];
 
 export const CLASS_ROLES: Record<Class, "tank" | "dps" | "healer"> = {
@@ -28,4 +30,5 @@ export const CLASS_ROLES: Record<Class, "tank" | "dps" | "healer"> = {
     "Tố Vấn": "healer",
     "Thần Tương": "dps",
     "Long Ngâm": "dps",
+    "All": "dps",
 };

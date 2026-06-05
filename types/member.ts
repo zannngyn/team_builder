@@ -5,7 +5,8 @@ export type Class =
     | "Cửu Linh"
     | "Tố Vấn"
     | "Thần Tương"
-    | "Long Ngâm";
+    | "Long Ngâm"
+    | "All";
 
 export type Lane = "Top" | "Mid" | "Bot" | "Flex";
 
@@ -23,4 +24,5 @@ export interface Member {
     lane: Lane | null;
     tags: MemberTag[];
     notes: string;
+    skills: string[]; // Array of skill IDs, max 3
 }

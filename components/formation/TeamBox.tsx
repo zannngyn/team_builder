@@ -4,8 +4,8 @@ import { useFormationStore } from "@/store/useFormationStore";
 import { MemberCard } from "@/components/shared/MemberCard";
 import { AlertTriangle } from "lucide-react";
 import { checkTeamHealth } from "@/lib/utils/teamHealth";
-import { TeamHealthIssue } from "@/types";
 import { useDroppable } from "@dnd-kit/core";
+import { Member } from "@/types";
 
 import { useState, useEffect } from "react";
 
@@ -19,9 +19,79 @@ const DEFAULT_LANE_NAMES = {
 interface TeamBoxProps {
   teamId: number;
   divisionId: 1 | 2;
+  onMemberClick?: (memberId: string) => void;
 }
 
-export function TeamBox({ teamId, divisionId }: TeamBoxProps) {
+// Individual slot component with its own drop zone
+function TeamSlot({
+  teamId,
+  position,
+  member,
+  onUpdateClass,
+  onUpdateLane,
+  onToggleTag,
+  onRemove,
+  onMemberClick,
+}: {
+  teamId: number;
+  position: number;
+  member: any;
+  onUpdateClass: (cls: any) => void;
+  onUpdateLane: (lane: any) => void;
+  onToggleTag: (tag: any) => void;
+  onRemove: () => void;
+  onMemberClick?: (memberId: string) => void;
+}) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `team-${teamId}-slot-${position}`,
+    data: {
+      type: "team-slot",
+      teamId,
+      position,
+    },
+  });
+
+  if (member) {
+    // Occupied slot - show member card
+    return (
+      <div
+        ref={setNodeRef}
+        className={`transition-all ${
+          isOver ? "scale-[1.02] ring-2 ring-blue-500 rounded-xl" : ""
+        }`}
+      >
+        <MemberCard
+          member={member}
+          onUpdateClass={onUpdateClass}
+          onUpdateLane={onUpdateLane}
+          onToggleTag={onToggleTag}
+          onRemove={onRemove}
+          onMemberClick={onMemberClick}
+          showControls={true}
+          draggable={true}
+          size="sm"
+          isCompact={false}
+        />
+      </div>
+    );
+  }
+
+  // Empty slot - show placeholder
+  return (
+    <div
+      ref={setNodeRef}
+      className={`border-2 border-dashed rounded-xl p-3 text-center text-xs font-medium transition-all ${
+        isOver
+          ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 scale-[1.02]"
+          : "border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/30 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-700"
+      }`}
+    >
+      {isOver ? "Thả vào đây" : "Ô trống"}
+    </div>
+  );
+}
+
+export function TeamBox({ teamId, divisionId, onMemberClick }: TeamBoxProps) {
   const {
     getTeamMembers,
     removeFromTeam,
@@ -64,15 +134,12 @@ export function TeamBox({ teamId, divisionId }: TeamBoxProps) {
   const teamMembers = getTeamMembers(teamId);
   const maxMembers = 6;
 
-  // Analyze team health
-  const teamHealth = checkTeamHealth(teamMembers, teamId);
+  // Analyze team health (filter out nulls for health check)
+  const teamHealth = checkTeamHealth(
+    teamMembers.filter((m): m is Member => m !== null),
+    teamId,
+  );
   const hasIssues = teamHealth.issues.length > 0;
-  const emptySlots = Math.max(0, maxMembers - teamMembers.length);
-
-  // Set up dnd-kit droppable
-  const { isOver, setNodeRef } = useDroppable({
-    id: teamId,
-  });
 
   const issueMessages = teamHealth.issues.map((issue) => {
     switch (issue) {
@@ -92,13 +159,16 @@ export function TeamBox({ teamId, divisionId }: TeamBoxProps) {
   });
   const tooltipText = issueMessages.join("\n");
 
+  // Create array of 6 slots with members or null
+  const slots = Array.from(
+    { length: maxMembers },
+    (_, i) => teamMembers[i] || null,
+  );
+
   return (
     <div
-      ref={setNodeRef}
       className={`bg-white dark:bg-slate-900/60 border-2 rounded-xl p-4 transition-all duration-200 flex flex-col justify-between relative ${
-        isOver
-          ? "border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.15)] bg-slate-50 dark:bg-slate-900/90 scale-[1.01]"
-          : hasIssues
+        hasIssues
           ? "border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.05)] hover:border-amber-500/50"
           : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
       }`}
@@ -175,33 +245,25 @@ export function TeamBox({ teamId, divisionId }: TeamBoxProps) {
           </select>
         </div>
 
-        {/* Team Members */}
+        {/* Team Members - Each slot is individually droppable */}
         <div className="space-y-2 min-h-[160px]">
-          {teamMembers.map((member) => (
-            <MemberCard
-              key={member.id}
+          {slots.map((member, index) => (
+            <TeamSlot
+              key={`slot-${index}`}
+              teamId={teamId}
+              position={index}
               member={member}
-              onUpdateClass={(cls) => updateMemberClass(member.id, cls)}
-              onUpdateLane={(lane) => updateMemberLane(member.id, lane)}
-              onToggleTag={(tag) => toggleMemberTag(member.id, tag)}
-              onRemove={() => removeFromTeam(member.id)}
-              showControls={true}
-              draggable={true}
-              size="sm"
-              isCompact={true}
+              onUpdateClass={(cls) =>
+                member && updateMemberClass(member.id, cls)
+              }
+              onUpdateLane={(lane) =>
+                member && updateMemberLane(member.id, lane)
+              }
+              onToggleTag={(tag) => member && toggleMemberTag(member.id, tag)}
+              onRemove={() => member && removeFromTeam(member.id)}
+              onMemberClick={onMemberClick}
             />
           ))}
-
-          {/* Empty Slots */}
-          {emptySlots > 0 &&
-            Array.from({ length: emptySlots }).map((_, idx) => (
-              <div
-                key={`empty-${idx}`}
-                className="border-2 border-dashed border-slate-200 dark:border-slate-800/80 rounded-xl p-3 text-center text-xs text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-950/30 font-medium hover:border-slate-350 dark:hover:border-slate-700 transition-colors"
-              >
-                Ô trống
-              </div>
-            ))}
         </div>
       </div>
     </div>

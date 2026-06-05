@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useFormationStore } from "@/store/useFormationStore";
 import { FormationBoard } from "@/components/formation/FormationBoard";
 import { DonateModal } from "@/components/shared/DonateModal";
+import { Member } from "@/types";
 import {
   ArrowLeft,
   Save,
@@ -149,7 +150,8 @@ export default function NewFormationPage() {
       div.teams.forEach((team) => {
         const members = useFormationStore
           .getState()
-          .getTeamMembers(team.teamId);
+          .getTeamMembers(team.teamId)
+          .filter((m): m is Member => m !== null);
         const laneStr = team.lane ? ` [${team.lane}]` : "";
         output += `\n[Team ${team.teamId}]${laneStr} (${members.length}/6 members)\n`;
         if (members.length === 0) {

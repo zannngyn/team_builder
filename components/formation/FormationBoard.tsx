@@ -8,10 +8,11 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCenter,
 } from "@dnd-kit/core";
 import { useState, useRef, useEffect } from "react";
 import { useFormationStore } from "@/store/useFormationStore";
-import { UnassignedPool } from "./UnassignedPool";
+import { ResourcePanel } from "./ResourcePanel";
 import { DivisionLayout } from "./DivisionLayout";
 import { LaneView } from "./LaneView";
 import { MemberCard } from "@/components/shared/MemberCard";
@@ -25,7 +26,6 @@ import {
   UserMinus,
   AlertTriangle,
 } from "lucide-react";
-import { Lane } from "@/types";
 
 // -----------------------------------------------------------------------
 // Clear Board dropdown — mirrors the ClearMenu in MemberList
@@ -179,7 +179,12 @@ export function FormationBoard() {
   } = useFormationStore();
 
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
-  const [isPoolCollapsed, setIsPoolCollapsed] = useState(false);
+  const [isResourcePanelCollapsed, setIsResourcePanelCollapsed] =
+    useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [resourceTab, setResourceTab] = useState<"members" | "skills">(
+    "members",
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -190,7 +195,16 @@ export function FormationBoard() {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
+    // Only handle member drags now (skills use click-to-pick)
     setActiveMemberId(event.active.id as string);
+  };
+
+  const handleMemberClick = (memberId: string) => {
+    setSelectedMemberId(memberId);
+    setResourceTab("skills");
+    if (isResourcePanelCollapsed) {
+      setIsResourcePanelCollapsed(false);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -199,15 +213,20 @@ export function FormationBoard() {
 
     if (!over) return;
 
+    // Handle member drag
     const memberId = active.id as string;
     const targetId = over.id;
+    const targetData = over.data.current;
 
     if (targetId === "unassigned") {
       removeFromTeam(memberId);
+    } else if (targetData?.type === "team-slot") {
+      // Drop on specific team slot - preserve position
+      const { teamId, position } = targetData;
+      assignToTeam(memberId, teamId, position);
     } else if (typeof targetId === "number") {
+      // Drop on team (backward compatibility)
       assignToTeam(memberId, targetId);
-    } else if (typeof targetId === "string" && targetId.startsWith("lane-")) {
-      // Dragging to a lane column is disabled as lanes are assigned at team level
     }
   };
 
@@ -223,23 +242,29 @@ export function FormationBoard() {
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
-        {/* Left Sidebar: Unassigned Pool (Fixed/Sticky height) */}
+        {/* Left Sidebar: Resource Panel (Members + Skills tabs) */}
         <div
           className={`w-full flex-shrink-0 lg:sticky lg:top-[90px] h-auto lg:h-[calc(100vh-140px)] flex flex-col transition-all duration-300 ${
-            isPoolCollapsed ? "lg:w-16" : "lg:w-80 xl:w-96"
+            isResourcePanelCollapsed ? "lg:w-12" : "lg:w-72"
           }`}
         >
-          <UnassignedPool
-            isCollapsed={isPoolCollapsed}
-            onToggleCollapse={() => setIsPoolCollapsed(!isPoolCollapsed)}
+          <ResourcePanel
+            isCollapsed={isResourcePanelCollapsed}
+            onToggleCollapse={() =>
+              setIsResourcePanelCollapsed(!isResourcePanelCollapsed)
+            }
+            selectedMemberId={selectedMemberId}
+            activeTab={resourceTab}
+            onTabChange={setResourceTab}
           />
         </div>
 
-        {/* Right Section: Roster Toolbar & Board */}
+        {/* Center Section: Roster Toolbar & Board */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Paint Mode Toolbar */}
           {guildMembers.length > 0 && <PaintModeToolbar />}
@@ -296,16 +321,24 @@ export function FormationBoard() {
           ) : (
             <div className="space-y-6">
               {/* Division 1 */}
-              <DivisionLayout divisionId={1} teamIds={division1TeamIds} />
+              <DivisionLayout
+                divisionId={1}
+                teamIds={division1TeamIds}
+                onMemberClick={handleMemberClick}
+              />
 
               {/* Division 2 */}
-              <DivisionLayout divisionId={2} teamIds={division2TeamIds} />
+              <DivisionLayout
+                divisionId={2}
+                teamIds={division2TeamIds}
+                onMemberClick={handleMemberClick}
+              />
             </div>
           )}
         </div>
       </div>
 
-      {/* Drag Overlay */}
+      {/* Drag Overlay - only for members */}
       <DragOverlay>
         {activeMember && (
           <div className="rotate-3 scale-105 opacity-90 shadow-2xl shadow-blue-500/10">

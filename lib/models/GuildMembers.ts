@@ -19,6 +19,7 @@ export async function createGuildMembers(
         lane: null,
         tags: [],
         notes: "",
+        skills: [],
     }));
 
     const guildMembers = {
