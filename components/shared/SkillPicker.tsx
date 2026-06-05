@@ -100,7 +100,7 @@ export function SkillPicker({
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl p-6 max-w-lg w-full shadow-2xl max-h-[80vh] overflow-y-auto"
+        className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl p-6 max-w-lg w-full shadow-2xl max-h-[80vh] overflow-y-auto overflow-x-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200 dark:border-slate-800">
@@ -127,7 +127,7 @@ export function SkillPicker({
             Chưa có chiêu thức nào cho phái {member.class}.
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-x-hidden">
             {availableSkills.map((skill) => {
               const isSelected = selectedSkills.includes(skill.id);
               const canSelect =
@@ -160,9 +160,9 @@ export function SkillPicker({
                   </div>
 
                   {/* Skill Name */}
-                  <div className="flex-1 text-left">
+                  <div className="flex-1 text-left min-w-0">
                     <p
-                      className={`text-xs font-bold ${
+                      className={`text-xs font-bold truncate ${
                         isSelected
                           ? "text-blue-700 dark:text-blue-300"
                           : "text-slate-700 dark:text-slate-300"

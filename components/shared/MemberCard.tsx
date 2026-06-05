@@ -109,6 +109,7 @@ export function MemberCard({
 
   const style: React.CSSProperties = {
     borderColor: borderGlowColor || "var(--card-border)",
+    backgroundColor: borderGlowColor ? `${borderGlowColor}66` : undefined,
     boxShadow:
       borderGlowColor && !isDragging
         ? `0 0 10px ${borderGlowColor}20, inset 0 0 10px ${borderGlowColor}05`

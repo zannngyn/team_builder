@@ -168,7 +168,7 @@ export function SkillSlot({
               zIndex: 1000,
             }}
             {...getFloatingProps()}
-            className="w-64 max-h-80 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-y-auto"
+            className="w-72 max-h-80 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-y-auto overflow-x-hidden"
           >
             {/* Header */}
             <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 py-2 z-1">

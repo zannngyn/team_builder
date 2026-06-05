@@ -1,12 +1,12 @@
 import { Class } from "@/types";
 
 export const CLASS_COLORS: Record<Class, string> = {
-    "Thiết Y": "#f97316",
-    "Toái Mộng": "#3b82f6",
-    "Huyết Hà": "#ef4444",
+    "Thiết Y": "#fcba03",
+    "Toái Mộng": "#38bdf8",
+    "Huyết Hà": "#f00202",
     "Cửu Linh": "#a855f7",
     "Tố Vấn": "#ec4899",
-    "Thần Tương": "#f97316",
+    "Thần Tương": "#1e40af",
     "Long Ngâm": "#22c55e",
     "All": "#ffffff",
 };
